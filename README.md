@@ -127,5 +127,3 @@ It should now not only load but when clicking "show collections" have a collecti
 + If you want to keep all PRISM components in their own namespace, create a new namespace named prism `kubectl create namespace prism`
 + Once you have made all the modifications you want, simply run `kubectl apply --recursive -f .` to deploy all PRISM components. If you created a new namespace for PRISM then run `kubectl apply --recursive -f . --namespace=prism`
 
-
-
