@@ -1,0 +1,10 @@
+apiVersion: v1
+metadata:
+  name: posda-api
+  labels:
+      prism: posda
+      posda: config-posda-api
+data:
+  API_PORT: "8087"
+  API_WORKERS: "5"
+kind: ConfigMap

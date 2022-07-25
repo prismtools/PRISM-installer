@@ -1,0 +1,84 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: posda-ingress
+  labels:
+      prism: posda
+      posda: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: posda.127.0.0.1.nip.io
+      http:
+        paths:
+            # This is a fallback rule, anything that doesn't match
+            # one of the more specific rules below will match this one
+            # This primarily supports serving of static content
+          - path: /(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posdaweb
+                port:
+                  number: 8080
+
+          - path: /posda[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda
+                port:
+                  number: 64610
+
+          - path: /papi[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda-api
+                port:
+                  number: 8087
+          - path: /papi
+            pathType: Prefix
+            backend:
+              service:
+                name: posda-api
+                port:
+                  number: 8087
+
+          - path: /pa1[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda
+                port:
+                  number: 64615
+          - path: /pa2[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda
+                port:
+                  number: 64616
+          - path: /pa3[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda
+                port:
+                  number: 64617
+          - path: /pa4[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda
+                port:
+                  number: 64618
+          - path: /pa5[/$](.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: posda
+                port:
+                  number: 64619

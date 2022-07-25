@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: magicka
+  labels:
+      prism: posda
+      posda: magicka
+spec:
+  selector:
+    matchLabels:
+      app: magicka
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magicka
+    spec:
+      containers:
+      - image: tcia/lanterna:latest
+        name: magicka
+        command: ["/scripts/magicka.py"]
+        envFrom:
+        - configMapRef:
+            name: posda-map
+        - configMapRef:
+            name: common
+        env:
+        - name: DEBUG
+          value: "1"
+        - name: PGHOST
+          value: "posdapostgresql"
+        - name: PGUSER
+          value: "postgres"
+        - name: PGPASSWORD
+          valueFrom:
+              secretKeyRef:
+                  name: posda-postgresql-secret
+                  key: postgresql_root_password
+        # livenessProbe:
+        #     httpGet:
+        #         path: /
+        #         port: 3000
+        #     initialDelaySeconds: 30
+        #     periodSeconds: 10
+        #     timeoutSeconds: 5
+        # readinessProbe:
+        #     httpGet:
+        #         path: /
+        #         port: 3000
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 2
+        #     timeoutSeconds: 1
+        # ports:
+        # - containerPort: 8089
+        #   name: magicka
+        volumeMounts:
+        - name: posda-cache
+          mountPath: /home/posda/cache
+      volumes:
+      - name: posda-cache
+        persistentVolumeClaim:
+          claimName: posda-cache-auto

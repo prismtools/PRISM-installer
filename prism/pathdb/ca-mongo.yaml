@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    name: ca-mongo
+    prism: ca-mongo
+    pathdb: ca-mongo
+  name: ca-mongo
+spec:
+  ports:
+  - name: "27017"
+    port: 27017
+    targetPort: 27017
+  selector:
+    name: ca-mongo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    name: ca-mongo
+    prism: ca-mongo
+    pathdb: ca-mongo
+  name: ca-mongo
+spec:
+  selector:
+    matchLabels:
+      name: ca-mongo
+  serviceName: "ca-mongo"
+  template:
+    metadata:
+      labels:
+        name: ca-mongo 
+        prism: ca-mongo
+        pathdb: ca-mongo
+    spec:
+      containers:
+      - image: mongo:4.2-bionic
+        name: ca-mongo
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - mountPath: /data/db
+          name: ca-mongodb
+      volumes:
+      - name: ca-mongodb
+        persistentVolumeClaim:
+          claimName: ca-mongodb

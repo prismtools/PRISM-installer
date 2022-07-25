@@ -1,0 +1,15 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: landing-configmap
+  labels:
+    prism: landing-configmap
+    name: landing-configmap
+data:
+  config.js: |
+    window.config = {
+      'posda': true,
+      'nbia': true,
+      'pathdb': true,
+      'cohortbuilder': true
+    }

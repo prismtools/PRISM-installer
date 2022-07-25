@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    prism: nbiadb
+    name: nbiadb
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: nbiadb
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: nbiadb
+  labels:
+    name: nbiadb
+    prism: nbiadb
+spec:
+  selector:
+    matchLabels:
+      app: nbiadb
+  serviceName: "mysql"
+  template:
+    metadata:
+      labels:
+        app: nbiadb
+        prism: nbiadb
+    spec:
+      volumes:
+      - name: nbiadb-persistent-storage
+        persistentVolumeClaim:
+          claimName: nbiadb-pv-claim-auto
+      - name: nbiadb-sql-conf
+        configMap:
+          name: nbiadb-sql-conf
+      - name: nbiadb-db-conf
+        configMap:
+          name: nbiadb-db-conf
+      containers:
+      - image: bitnami/mariadb:10.5.9
+        name: nbiadb
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          value: Mysql1!.
+        - name: MARIADB_DATABASE
+          value: nbiadb
+        - name: MARIADB_USER
+          value: nbia_user
+        - name: MARIADB_PASSWORD
+          value: nbia_password
+        ports:
+        - containerPort: 3306
+          name: nbidb
+        volumeMounts:
+        - name: nbiadb-persistent-storage
+          mountPath: /bitnami/mariadb
+        - name: nbiadb-sql-conf
+          mountPath: /docker-entrypoint-initdb.d/
+        - name: nbiadb-db-conf
+          mountPath: /opt/bitnami/mariadb/conf/ 

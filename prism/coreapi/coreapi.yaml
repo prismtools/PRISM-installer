@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: coreapi
+    prism: coreapi
+  name: coreapi
+spec:
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
+  selector:
+    name: coreapi
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coreapi
+  labels:
+    name: coreapi
+    prism: coreapi
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: coreapi
+  template:
+    metadata:
+      labels:
+        name: coreapi
+        prism: coreapi
+    spec:
+      containers:
+      - env:
+        - name: API_WORKERS
+          value: "4"
+        - name: API_PORT
+          value: "8000"
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              key: database-user
+              name: facet-mongodb
+        - name: MONGO_PASS
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: facet-mongodb
+        - name: MONGO_DATABASE
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: facet-mongodb
+        - name: MONGO_HOSTNAME
+          value: "facet-mongo"
+        image: tcia/prism-core:v1.0
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /v1/other/test
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: core
+        ports:
+        - containerPort: 8000
+          name: coreapi
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /v1/other/test
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        volumeMounts:
+        - mountPath: /storage
+          name: core-persistent-storage
+      restartPolicy: Always
+      volumes:
+      - name: core-persistent-storage
+        persistentVolumeClaim:
+          claimName: core-persistent-storage

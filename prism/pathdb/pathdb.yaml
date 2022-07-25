@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    name: quip-pathdb
+    prism: quip-pathdb
+    pathdb: quip-pathdb
+  name: quip-pathdb
+spec:
+  ports:
+  - name: "443"
+    port: 443
+    targetPort: 8443
+  - name: "80"
+    port: 80
+    targetPort: 8080
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  selector:
+    name: pathdb
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    name: pathdb
+    prism: pathdb
+    pathdb: pathdb
+  name: pathdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: pathdb
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: pathdb
+        prism: pathdb
+        pathdb: pathdb
+    spec:
+      containers:
+      - args:
+        - /config/pathdb_pre.sh
+        image: jrutecht/pathdb:v1.0
+        imagePullPolicy: ""
+        name: quip-pathdb
+        ports:
+        - containerPort: 8443
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /data/
+          name: data
+        - mountPath: /config/map
+          name: httpd-conf
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
+      - name: httpd-conf
+        configMap:
+          name: httpd-conf
+status: {}

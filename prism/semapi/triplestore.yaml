@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: triplestore
+  labels:
+    name: triplestore
+    prism: triplestore
+spec:
+  ports:
+  - port: 7200
+  selector:
+    app: triplestore
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: triplestore
+  labels:
+    name: triplestore
+    prism: triplestore
+spec:
+  selector:
+    matchLabels:
+      app: triplestore
+  serviceName: "triplestore"
+  template:
+    metadata:
+      labels:
+        app: triplestore
+        prism: triplestore
+    spec:
+      initContainers:
+      - image: tcia/graphdb:9.6.0
+        name: triplestore-init
+        env:
+        - name: GDB_JAVA_OPTS
+          value: -Xmx8g -Xms1g -Dgraphdb.home.data=/opt/graphdb/home/data
+        volumeMounts:
+        - name: triplestore-persistent-storage
+          mountPath: /opt/graphdb/home
+        - name: prism-ttl-configmap
+          mountPath: /opt/preload
+        # command: ["/bin/bash", "/opt/graphdb/dist/bin/preload", "-c", "/opt/preload/prism-config.ttl", "/opt/preload/test.nt", "|", "return", "0"]
+        command: ["/bin/sh","-c"]
+        args: ["/opt/graphdb/dist/bin/preload -c /opt/preload/prism-config.ttl /opt/preload/test.nt | return 0"]
+      containers:
+      - image: tcia/graphdb:9.6.0
+        name: triplestore
+        env:
+        - name: GDB_JAVA_OPTS
+          value: -Xmx8g -Xms1g -Dgraphdb.home.data=/opt/graphdb/home/data
+        ports:
+        - containerPort: 7200
+          name: triplestore
+        volumeMounts:
+        - name: triplestore-persistent-storage
+          mountPath: /opt/graphdb/home
+        - name: prism-ttl-configmap
+          mountPath: /opt/preload
+      volumes:
+      - name: triplestore-persistent-storage
+        persistentVolumeClaim:
+          claimName: triplestore-pv
+      - name: prism-ttl-configmap
+        configMap:
+          name: prism-ttl-configmap

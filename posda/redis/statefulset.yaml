@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+      prism: posda
+      posda: redis
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: redis
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: redis
+  labels:
+      prism: posda
+      posda: redis
+spec:
+  serviceName: redis
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - image: bitnami/redis:6.2
+        name: redis
+        env:
+        - name: ALLOW_EMPTY_PASSWORD
+          value: "yes"
+        # - name: POSTGRESQL_POSTGRES_PASSWORD
+        #   valueFrom:
+        #       secretKeyRef:
+        #           name: postgresql-secret
+        #           key: postgresql_root_password
+        # - name: POSTGRESQL_DATABASE
+        #   valueFrom:
+        #       secretKeyRef:
+        #           name: postgresql-secret
+        #           key: postgresql_database
+        # - name: POSTGRESQL_USERNAME
+        #   valueFrom:
+        #       secretKeyRef:
+        #           name: postgresql-secret
+        #           key: postgresql_username
+        # - name: POSTGRESQL_PASSWORD
+        #   valueFrom:
+        #       secretKeyRef:
+        #           name: postgresql-secret
+        #           key: postgresql_password
+        # livenessProbe:
+        #     exec:
+        #         command:
+        #             - bash
+        #             - "-c"
+        #             - |
+        #                 mysql -u root -p$MYSQL_ROOT_PASSWORD -h 127.0.0.1 -e 'SELECT 1'
+        #     initialDelaySeconds: 30
+        #     periodSeconds: 10
+        #     timeoutSeconds: 5
+        # readinessProbe:
+        #     exec:
+        #         command:
+        #             - bash
+        #             - "-c"
+        #             - |
+        #                 mysql -u root -p$MYSQL_ROOT_PASSWORD -h 127.0.0.1 -e 'SELECT 1'
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 2
+        #     timeoutSeconds: 1
+        ports:
+        - containerPort: 6379
+          name: redis

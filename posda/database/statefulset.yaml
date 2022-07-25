@@ -1,0 +1,80 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: posdapostgresql
+    labels:
+        prism: posda
+        posda: postgres
+spec:
+    ports:
+        - port: 5432
+    selector:
+        app: posdapostgresql
+    clusterIP: None
+---
+apiVersion: apps/v1    # for versions before 1.9.0 use apps/v1beta2
+kind: StatefulSet
+metadata:
+    name: posdapostgresql
+    labels:
+        prism: posda
+        posda: postgres
+spec:
+    serviceName: posdapostgresql
+    selector:
+        matchLabels:
+            app: posdapostgresql
+    template:
+        metadata:
+            labels:
+                app: posdapostgresql
+        spec:
+            containers:
+                - image: bitnami/postgresql:13
+                  name: posdapostgresql
+                  env:
+                      - name: POSTGRESQL_POSTGRES_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: posda-postgresql-secret
+                                key: postgresql_root_password
+                      - name: POSTGRESQL_DATABASE
+                        valueFrom:
+                            secretKeyRef:
+                                name: posda-postgresql-secret
+                                key: postgresql_database
+                      - name: POSTGRESQL_USERNAME
+                        valueFrom:
+                            secretKeyRef:
+                                name: posda-postgresql-secret
+                                key: postgresql_username
+                      - name: POSTGRESQL_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: posda-postgresql-secret
+                                key: postgresql_password
+                  ports:
+                      - containerPort: 5432
+                        name: posdapostgresql
+
+                  volumeMounts:
+                      - name: posda-postgresql-persistent-storage
+                        mountPath: /bitnami/postgresql
+                      - name: initfiles
+                        mountPath: /docker-entrypoint-initdb.d
+
+            initContainers:
+                - name: install
+                  image: busybox
+                  command: ["wget"]
+                  args: ["-O", "/work-dir/all.sql", "https://code.imphub.org/projects/PT/repos/oneposda/raw/database/all.sql?at=refs%2Fheads%2Fmaster"]
+                  volumeMounts:
+                      - name: initfiles
+                        mountPath: "/work-dir"
+            volumes:
+                - name: posda-postgresql-persistent-storage
+                  persistentVolumeClaim:
+                      claimName: posda-postgresql-pv-claim-auto
+                - name: initfiles
+                  emptyDir: {}

@@ -1,0 +1,26 @@
+apiVersion: v1
+metadata:
+  name: posda-map
+  labels:
+      prism: posda
+      posda: config-posda
+data:
+  POSDA_AUTH_TYPE: database
+  POSDA_CACHE_ROOT: /home/posda/cache
+  POSDA_DATABASE_CONFIG: /home/posda/posdatools/Config/databases.json
+  POSDA_DEBUG: "0"
+  POSDA_DICOM_SEND_CONFIG: /home/posda/posdatools/Config/dicom_send_locations.json
+  POSDA_ENABLE_INTAKE_PUBLIC: "0"
+  POSDA_EXTRACTION_PORT: "64611"
+  POSDA_INTAKE_ADDR: 10.10.10.10
+  POSDA_LDAP_BASE: '''dc=cancerimagingarchive,dc=net'';'
+  POSDA_LDAP_DEBUG: "0"
+  POSDA_LDAP_FILTER: '''(cn=$username)'';'
+  POSDA_LDAP_URL: '''tcia-ldap-2-red:1389'';'
+  POSDA_PORT: "64610"
+  POSDA_PUBLIC_ADDR: 10.10.10.10
+  POSDA_REAL_EMAIL: "0"
+  POSDA_RECIEVER_PORT: "64612"
+  POSDA_ROOT: /home/posda/posdatools
+  POSDA_SUBMISSION_ROOT: /home/posda/cache/submission_root
+kind: ConfigMap

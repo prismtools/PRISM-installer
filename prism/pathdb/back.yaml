@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    name: ca-security
+    prism: ca-security
+    pathdb: ca-security
+  name: ca-security
+spec:
+  ports:
+  - name: "4010"
+    port: 4010
+    targetPort: 4010
+  selector:
+    name: ca-security
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    name: ca-security
+    prism: ca-security
+    pathdb: ca-security
+  name: ca-security
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ca-security
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: ca-security
+        prism: ca-security
+        pathdb: ca-security
+    spec:
+      containers:
+      - env:
+        - name: DEFAULT_USER_TYPE
+          value: Editor
+        - name: DISABLE_SEC
+          value: "true"
+        - name: DEBUG
+          value: "express:*"
+        - name: IIP_PATH
+          value: http://ca-iip/fcgi-bin/iipsrv.fcgi
+        - name: JWK_URL
+          value: https://www.googleapis.com/oauth2/v3/certs
+        - name: MONGO_URI
+          value: mongodb://ca-mongo
+        image: ghcr.io/camicroscope/caracal:master
+        imagePullPolicy: ""
+        name: ca-security
+        ports:
+        - containerPort: 4010
+        resources: {}
+        volumeMounts:
+        - mountPath: /root/src/keys/
+          name: keys
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: keys
+        persistentVolumeClaim:
+          claimName: keys
+status: {}

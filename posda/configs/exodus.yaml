@@ -1,0 +1,12 @@
+apiVersion: v1
+metadata:
+  name: exodus
+  labels:
+      prism: posda
+      posda: config-posda-exodus
+data:
+  EXODUS_PASS: Theeyeofra1
+  EXODUS_PSQL_DB_NAME: posda_files
+  EXODUS_RETRY_COUNT: "1"
+  EXODUS_USER: quasarj
+kind: ConfigMap

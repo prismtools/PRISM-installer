@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: posda
+  labels:
+      prism: posda
+      posda: posda
+spec:
+  ports:
+  - port: 64610
+    name: posda-main
+  - port: 64615
+    name: posda1
+  - port: 64616
+    name: posda2
+  - port: 64617
+    name: posda3
+  - port: 64618
+    name: posda4
+  - port: 64619
+    name: posda5
+  selector:
+    app: posda
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: posda
+  labels:
+      prism: posda
+      posda: posda
+spec:
+  selector:
+    matchLabels:
+      app: posda
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: posda
+    spec:
+      containers:
+      - image: tcia/posda:kubes
+        name: posda
+        imagePullPolicy: Always
+        args: ["main"]
+        envFrom:
+        - configMapRef:
+            name: posda-map
+        - configMapRef:
+            name: common
+        env:
+        - name: PGHOST
+          value: "posdapostgresql"
+        - name: PGUSER
+          value: "postgres"
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: posda-postgresql-secret
+              key: postgresql_root_password
+        # livenessProbe:
+        #     httpGet:
+        #         path: /
+        #         port: 3000
+        #     initialDelaySeconds: 30
+        #     periodSeconds: 10
+        #     timeoutSeconds: 5
+        # readinessProbe:
+        #     httpGet:
+        #         path: /
+        #         port: 3000
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 2
+        #     timeoutSeconds: 1
+        ports:
+        - containerPort: 64610
+          name: posda
+        - containerPort: 64615
+          name: posda1
+        - containerPort: 64616
+          name: posda2
+        - containerPort: 64617
+          name: posda3
+        - containerPort: 64618
+          name: posda4
+        - containerPort: 64619
+          name: posda5
+        volumeMounts:
+        - name: posda-cache
+          mountPath: /home/posda/cache
+        - name: testmap
+          mountPath: "/etc/testmap"
+          readOnly: true
+      volumes:
+      - name: posda-cache
+        persistentVolumeClaim:
+          claimName: posda-cache-auto
+      - name: testmap
+        configMap:
+          name: posda-map

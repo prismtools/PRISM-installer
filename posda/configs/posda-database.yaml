@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  PGHOST: db
+  PGPASSWORD: example
+  PGUSER: postgres
+kind: ConfigMap
+metadata:
+  name: posda-database
+  labels:
+      prism: posda
+      posda: config-posda-database

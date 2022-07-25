@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: web
+    prism: web
+  name: web
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+  selector:
+    name: web
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    name: web
+    prism: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: web
+  template:
+    metadata:
+      labels:
+        name: web
+        prism: web
+    spec:
+      containers:
+        - image: tcia/prism_landing:v1.1
+          name: web
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+          - name: nginx-conf
+            mountPath: /opt/bitnami/nginx/conf/server_blocks/
+          - name: landing-conf
+            mountPath: /app/config
+          imagePullPolicy: Always
+      restartPolicy: Always
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: nginx-api-configmap
+      - name: landing-conf
+        configMap:
+          name: landing-configmap
+status: {}

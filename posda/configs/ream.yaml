@@ -1,0 +1,15 @@
+apiVersion: v1
+metadata:
+  name: ream
+  labels:
+      prism: posda
+      posda: config-posda-ream
+data:
+  REAM_CLIENTID: nbiaRestAPIClient
+  REAM_CLIENTSECRET: ItsBetweenUAndMe
+  REAM_PASS: Theeyeofra1
+  REAM_PSQL_DB_NAME: posda_files
+  REAM_RETRY_COUNT: "1"
+  REAM_URL: https://public-dev.cancerimagingarchive.net
+  REAM_USER: quasarj
+kind: ConfigMap

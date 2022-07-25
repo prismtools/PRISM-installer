@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    name: heatmaploader
+    prism: heatmaploader
+    pathdb: heatmaploader
+  name: heatmaploader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: heatmaploader
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: heatmaploader
+        prism: heatmaploader
+        pathdb: heatmaploader
+    spec:
+      containers:
+      - env:
+        - name: DEBIAN_FRONTEND
+          value: noninteractive
+        - name: TZ
+          value: America/New_York
+        image: camicroscope/pathdb-heatmaploader:latest
+        imagePullPolicy: ""
+        name: quip-hmloader
+        resources: {}
+        volumeMounts:
+        - mountPath: /mnt/data/
+          name: data
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    name: segloader
+    prism: segloader
+    pathdb: segloader
+  name: segloader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: segloader
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: segloader
+        prism: segloader
+        pathdb: segloader
+    spec:
+      containers:
+      - image: camicroscope/pathdb-segloader:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
+        imagePullPolicy: ""
+        name: quip-segloader
+        resources: {}
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    name: imageloader
+    prism: imageloader
+    pathdb: imageloader
+  name: imageloader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: imageloader
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: imageloader
+        prism: imageloader
+        pathdb: imageloader
+    spec:
+      containers:
+      - image: camicroscope/pathdb-imageloader:latest
+        imagePullPolicy: ""
+        name: quip-imageloader
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "while true; do sleep 30; done;" ]
+        resources: {}
+        volumeMounts:
+        - mountPath: /data/images
+          name: data
+          subPath: 'pathdb/files/wsi'
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
+status: {}

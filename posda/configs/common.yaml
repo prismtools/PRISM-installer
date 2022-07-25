@@ -1,0 +1,16 @@
+apiVersion: v1
+data:
+  LANG: en_US.UTF-8
+  LANGUAGE: en_US.UTF-8
+  LC_ALL: en_US.UTF-8
+  POSDA_API_URL: http://posda.127.0.0.1.nip.io/papi
+  POSDA_EXTERNAL_HOSTNAME: posda.127.0.0.1.nip.io
+  POSDA_INTERNAL_API_URL: http://posdaweb:8080/papi
+  POSDA_REDIS_HOST: redis
+  TZ: America/Chicago
+kind: ConfigMap
+metadata:
+  name: common
+  labels:
+      prism: posda
+      posda: config-common

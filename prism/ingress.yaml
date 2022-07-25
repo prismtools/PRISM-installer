@@ -1,0 +1,112 @@
+---
+# These are seperated by the rewrite-target
+#
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prism
+  labels:
+      prism: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: 127.0.0.1.nip.io
+      http:
+        paths:
+            # This is a fallback rule, anything that doesn't match
+            # one of the more specific rules below will match this one
+            # This primarily supports serving of static content
+          - path: /(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 8080
+
+    - host: nbia.127.0.0.1.nip.io
+      http:
+        paths:
+            # This is a fallback rule, anything that doesn't match
+            # one of the more specific rules below will match this one
+            # This primarily supports serving of static content
+          - path: /(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: nbia
+                port:
+                  number: 8080
+
+    - host: pathdb.127.0.0.1.nip.io
+      http:
+        paths:
+            # This is a fallback rule, anything that doesn't match
+            # one of the more specific rules below will match this one
+            # This primarily supports serving of static content
+          - path: /(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: quip-pathdb
+                port:
+                  number: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prism-api
+  labels:
+      prism: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/$1
+spec:
+  rules:
+    - host: 127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /api/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /semapi/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: semapi
+                port:
+                  number: 3000
+          - path: /coreapi/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: coreapi
+                port:
+                  number: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prism-nbiaapi
+  labels:
+      prism: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /nbia-api/$1
+spec:
+  rules:
+    - host: 127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /nbiaapi/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: nbia
+                port:
+                  number: 8080

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openldap
+  labels:
+    prism: openldap
+    name: openldap
+    nbia: openldap
+spec:
+  ports:
+  - port: 1389
+  selector:
+    app: openldap
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: openldap
+  labels:
+    name: openldap
+    prism: openldap
+    nbia: openldap
+spec:
+  selector:
+    matchLabels:
+      app: openldap
+  serviceName: "openldap"
+  template:
+    metadata:
+      labels:
+        app: openldap
+        prism: openldap
+        nbia: openldap
+    spec:
+      volumes:
+      - name: openldap-conf
+        configMap:
+          name: openldap-conf
+      containers:
+      - image: bitnami/openldap:2
+        name: openldap
+        env:
+        - name: LDAP_ADMIN_USERNAME
+          value: admin
+        - name: LDAP_ADMIN_PASSWORD
+          value: adminpassword
+        - name: LDAP_CUSTOM_LDIF_DIR
+          value: /opt/ldapconf/nbia.ldif
+        ports:
+        - containerPort: 1389
+          name: openldap
+        - containerPort: 1636
+          name: openldap2
+        volumeMounts:
+        - name: openldap-conf
+          mountPath: /opt/ldapconf/

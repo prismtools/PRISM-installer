@@ -1,0 +1,21 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-api-configmap
+  labels:
+    prism: nginx-api-configmap
+    name: nginx-api-configmap
+data:
+  api.conf: |
+      server {
+          listen 8080;
+
+          server_name _;
+
+          location / {
+              try_files $uri $uri/ /index.html;
+              add_header   Cache-Control public;
+              expires      1d;
+              root   /app;
+          }
+      }

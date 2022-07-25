@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: facet-mongo
+  labels:
+    name: facet-mongo
+    prism: facet-mongo
+spec:
+  ports:
+  - name: facet-mongo
+    port: 27017
+  selector:
+    app: facet-mongo
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: facet-mongo
+    prism: facet-mongo
+  name: facet-mongo
+spec:
+  selector:
+    matchLabels:
+      app: facet-mongo
+  serviceName: "facet-mongo"
+  template:
+    metadata:
+      labels:
+        app: facet-mongo
+        prism: facet-mongo
+    spec:
+      containers:
+      - name: facet-mongo
+        image: bitnami/mongodb:4.4
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: database-user
+              name: facet-mongodb
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: facet-mongodb
+        - name: MONGODB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: facet-mongodb
+        - name: MONGODB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-admin-password
+              name: facet-mongodb
+        ports:
+        - containerPort: 27017
+          name: facet-mongo
+          protocol: TCP
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /v1/other/test
+        #     port: 8000
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 2
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /bitnami/mongodb/data
+          name: facet-mongodb-data
+        # volumeMounts:
+        # - mountPath: /storage
+        #   name: core-persistent-storage
+      restartPolicy: Always
+      volumes:
+      - name: facet-mongodb-data
+        persistentVolumeClaim:
+          claimName: facet-mongodb-pv
+      # volumes:
+      # - name: core-persistent-storage
+      #   persistentVolumeClaim:
+      #     claimName: core-pv-claim-auto
